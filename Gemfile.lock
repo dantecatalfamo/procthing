@@ -1,0 +1,19 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ffi (1.15.3)
+    pastel (0.8.0)
+      tty-color (~> 0.5)
+    sys-proctable (1.2.6)
+      ffi
+    tty-color (0.6.0)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  pastel (~> 0.8.0)
+  sys-proctable (~> 1.2)
+
+BUNDLED WITH
+   2.2.23
