@@ -76,7 +76,9 @@ class ProcTree
         pipes << ' '
       end
     end
-    if depth.zero?
+    if depth.zero? && prc.children.empty?
+      pipes << @pastel.send(depth_color(depth), HORIZONTAL)
+    elsif depth.zero?
       pipes << @pastel.send(depth_color(depth), HORIZONTAL_FIRST)
     else
       pipes << @pastel.send(depth_color(depth - 1), last ? CONNECTOR_LAST : CONNECTOR)
@@ -92,7 +94,12 @@ class ProcTree
   end
 
   def print_tree
-    print_node(@tree[0], 0, false, [])
+    top = @tree[0]
+    if (top_pid = @options[:toppid])
+      top = @tree[top_pid]
+      abort "PID #{top_pid} does not exist" unless top
+    end
+    print_node(top, 0, false, [])
   end
 end
 
@@ -100,7 +107,7 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename $PROGRAM_NAME} [options]"
 
-  opts.on('-p', '--pid', 'Display process ID') do
+  opts.on('-i', '--id', 'Display process ID') do
     options[:pid] = true
   end
   opts.on('-c', '--comm', 'Display process command name') do
@@ -114,6 +121,11 @@ OptionParser.new do |opts|
   end
   opts.on('-k', '--kernel', 'Include kernel threads') do
     options[:kernel] = true
+  end
+  opts.on('-p', '--pid PID', 'Only display processes under a specified process ID') do |pid|
+    options[:toppid] = Integer(pid)
+  rescue ArgumentError
+    abort "Could not parse PID \"#{pid}\""
   end
 end.parse!
 
