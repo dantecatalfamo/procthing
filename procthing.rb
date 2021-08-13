@@ -4,6 +4,7 @@
 require 'sys/proctable'
 require 'tty/table'
 require 'pastel'
+require 'optparse'
 
 # The ProcNode class is used to represent the process tree.
 class ProcNode
@@ -45,6 +46,7 @@ class ProcTree
     kproc = Struct::ProcTableStruct.new
     kproc.name = 'Kernel'
     kproc.comm = Gem::Platform.local.os
+    kproc.pid = 0
     tree[0] = ProcNode.new(kproc)
 
     tree.each_pair do |pid, prtr|
@@ -55,7 +57,7 @@ class ProcTree
     end
   end
 
-  def print_node(prc, depth, last, depth_map)
+  def print_node(prc, depth, last, depth_map, options)
     pipes = []
     (depth - 1).times do |i|
       if depth_map[i+1]
@@ -71,13 +73,31 @@ class ProcTree
       pipes << @pastel.send(depth_color(depth - 1), last ? CONNECTOR_LAST : CONNECTOR)
       pipes << @pastel.send(depth_color(depth), prc.children.empty? ? HORIZONTAL : HORIZONTAL_CHILDREN)
     end
-    puts "#{pipes.join}#{prc.proc.name}"
-    prc.children.each { |chld| print_node(chld, depth + 1, chld == prc.children.last, depth_map.clone << !last) }
+    pid_str = "[#{prc.proc.pid}] " if options[:pid]
+    comm_str = " (#{prc.proc.comm})" if options[:comm]
+    cmd_str = " [#{prc.proc.cmdline}]" if options[:cmd]
+    puts "#{pipes.join}#{pid_str}#{prc.proc.name}#{comm_str}#{cmd_str}"
+    prc.children.each { |chld| print_node(chld, depth + 1, chld == prc.children.last, depth_map.clone << !last, options) }
   end
 
-  def print_tree
-    print_node(@tree[0], 0, false, [])
+  def print_tree(options = {})
+    print_node(@tree[0], 0, false, [], options)
   end
 end
 
-ProcTree.new.print_tree
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename $0} [options]"
+  
+  opts.on('-p', '--pid', 'Display process ID') do
+    options[:pid] = true
+  end
+  opts.on('-c', '--comm', 'Display process command name') do
+    options[:comm] = true
+  end
+  opts.on('-m', '--cmd', 'Display process command line') do
+    options[:cmd] = true
+  end
+end.parse!
+
+ProcTree.new.print_tree(options)
