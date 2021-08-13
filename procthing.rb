@@ -17,8 +17,8 @@ end
 
 class ProcTree
   COLORS = %i[red green yellow bright_blue magenta cyan white].freeze
-  VERTICAL_FIRST = '┌'
   VERTICAL = '│'
+  HORIZONTAL_FIRST = '┌'
   HORIZONTAL = '─'
   HORIZONTAL_CHILDREN = '┬'
   CONNECTOR = '├'
@@ -60,11 +60,13 @@ class ProcTree
       color = depth_color(i)
       pipes << @pastel.send(color, VERTICAL)
     end
-    unless depth.zero?
+    if depth.zero?
+      pipes << @pastel.send(depth_color(depth), HORIZONTAL_FIRST)
+    else
       pipes << @pastel.send(depth_color(depth - 1), last ? CONNECTOR_LAST : CONNECTOR)
+      pipes << @pastel.send(depth_color(depth), prc.children.empty? ? HORIZONTAL : HORIZONTAL_CHILDREN)
     end
-    dash = @pastel.send(depth_color(depth), prc.children.empty? ? HORIZONTAL : HORIZONTAL_CHILDREN)
-    puts "#{pipes.join}#{dash}#{prc.proc.name}"
+    puts "#{pipes.join}#{prc.proc.name}"
     prc.children.each { |chld| print_node(chld, depth + 1, chld == prc.children.last) }
   end
 
