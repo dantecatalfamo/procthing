@@ -54,11 +54,15 @@ class ProcTree
     end
   end
 
-  def print_node(prc, depth, last)
+  def print_node(prc, depth, last, depth_map)
     pipes = []
     (depth - 1).times do |i|
-      color = depth_color(i)
-      pipes << @pastel.send(color, VERTICAL)
+      if depth_map[i+1]
+        color = depth_color(i)
+        pipes << @pastel.send(color, VERTICAL)
+      else
+        pipes << ' '
+      end
     end
     if depth.zero?
       pipes << @pastel.send(depth_color(depth), HORIZONTAL_FIRST)
@@ -67,11 +71,11 @@ class ProcTree
       pipes << @pastel.send(depth_color(depth), prc.children.empty? ? HORIZONTAL : HORIZONTAL_CHILDREN)
     end
     puts "#{pipes.join}#{prc.proc.name}"
-    prc.children.each { |chld| print_node(chld, depth + 1, chld == prc.children.last) }
+    prc.children.each { |chld| print_node(chld, depth + 1, chld == prc.children.last, depth_map.clone << !last) }
   end
 
   def print_tree
-    print_node(@tree[0], 0, false)
+    print_node(@tree[0], 0, false, [])
   end
 end
 
