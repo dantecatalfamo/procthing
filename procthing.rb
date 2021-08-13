@@ -2,7 +2,6 @@
 # frozen_string_literal: true
 
 require 'sys/proctable'
-require 'tty/table'
 require 'pastel'
 require 'optparse'
 
