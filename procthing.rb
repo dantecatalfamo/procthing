@@ -44,6 +44,7 @@ class ProcTree
 
     kproc = Struct::ProcTableStruct.new
     kproc.name = 'Kernel'
+    kproc.comm = Gem::Platform.local.os
     tree[0] = ProcNode.new(kproc)
 
     tree.each_pair do |pid, prtr|
