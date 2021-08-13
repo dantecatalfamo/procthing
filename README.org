@@ -1,0 +1,19 @@
+* ProcThing
+
+  Just messing around with =sys/proctable= for fun.
+
+  Creates a color-coded process tree.
+
+** Usage
+   #+begin_src shell
+   Usage: procthing.rb [options]
+       -i, --id                         Display process ID
+       -c, --comm                       Display process command name
+       -m, --cmd                        Display process command line
+       -n, --no-color                   Disable color output
+       -k, --kernel                     Include kernel threads
+       -p, --pid PID                    Only display processes under a specified process ID
+   #+end_src
+
+** Screenshots
+   [[file:screenshots.png]]
