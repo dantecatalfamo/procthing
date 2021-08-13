@@ -4,7 +4,6 @@
 require 'sys/proctable'
 require 'tty/table'
 require 'pastel'
-require 'pry'
 
 # The ProcNode class is used to represent the process tree.
 class ProcNode
