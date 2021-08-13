@@ -37,6 +37,17 @@ class ProcTree
     @pastel = Pastel.new(enabled: !color)
   end
 
+  def print_tree
+    top = @tree[0]
+    if (top_pid = @options[:toppid])
+      top = @tree[top_pid]
+      abort "PID #{top_pid} does not exist" unless top
+    end
+    print_node(top, 0, false, [])
+  end
+
+  private
+
   def depth_color(depth)
     COLORS[depth % COLORS.length]
   end
@@ -54,9 +65,12 @@ class ProcTree
     tree = procs.each_with_object({}) do |prc, h|
       h[prc.pid] = ProcNode.new(prc)
     end
-
     tree[0] = ProcNode.new(kproc)
 
+    tree_sort(tree)
+  end
+
+  def tree_sort(tree)
     tree.each_pair do |pid, prtr|
       next if pid.zero?
       next if pid == 2 && !@options[:kernel]
@@ -66,7 +80,7 @@ class ProcTree
     end
   end
 
-  def print_node(prc, depth, last, depth_map)
+  def gen_pipes(depth, depth_map, no_children, last)
     pipes = []
     (depth - 1).times do |i|
       if depth_map[i + 1]
@@ -76,14 +90,18 @@ class ProcTree
         pipes << ' '
       end
     end
-    if depth.zero? && prc.children.empty?
+    if depth.zero? && no_children
       pipes << @pastel.send(depth_color(depth), HORIZONTAL)
     elsif depth.zero?
       pipes << @pastel.send(depth_color(depth), HORIZONTAL_FIRST)
     else
       pipes << @pastel.send(depth_color(depth - 1), last ? CONNECTOR_LAST : CONNECTOR)
-      pipes << @pastel.send(depth_color(depth), prc.children.empty? ? HORIZONTAL : HORIZONTAL_CHILDREN)
+      pipes << @pastel.send(depth_color(depth), no_children ? HORIZONTAL : HORIZONTAL_CHILDREN)
     end
+  end
+
+  def print_node(prc, depth, last, depth_map)
+    pipes = gen_pipes(depth, depth_map, prc.children.empty?, last)
     pid_str = "[#{prc.proc.pid}] " if @options[:pid]
     comm_str = " (#{prc.proc.comm})" if @options[:comm]
     cmd_str = " [#{prc.proc.cmdline}]" if @options[:cmd]
@@ -91,15 +109,6 @@ class ProcTree
     prc.children.each do |chld|
       print_node(chld, depth + 1, chld == prc.children.last, depth_map.clone << !last)
     end
-  end
-
-  def print_tree
-    top = @tree[0]
-    if (top_pid = @options[:toppid])
-      top = @tree[top_pid]
-      abort "PID #{top_pid} does not exist" unless top
-    end
-    print_node(top, 0, false, [])
   end
 end
 
