@@ -60,7 +60,7 @@ class ProcTree
   def print_node(prc, depth, last, depth_map, options)
     pipes = []
     (depth - 1).times do |i|
-      if depth_map[i+1]
+      if depth_map[i + 1]
         color = depth_color(i)
         pipes << @pastel.send(color, VERTICAL)
       else
@@ -77,7 +77,9 @@ class ProcTree
     comm_str = " (#{prc.proc.comm})" if options[:comm]
     cmd_str = " [#{prc.proc.cmdline}]" if options[:cmd]
     puts "#{pipes.join}#{pid_str}#{prc.proc.name}#{comm_str}#{cmd_str}"
-    prc.children.each { |chld| print_node(chld, depth + 1, chld == prc.children.last, depth_map.clone << !last, options) }
+    prc.children.each do |chld|
+      print_node(chld, depth + 1, chld == prc.children.last, depth_map.clone << !last, options)
+    end
   end
 
   def print_tree(options = {})
@@ -88,7 +90,7 @@ end
 options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename $0} [options]"
-  
+
   opts.on('-p', '--pid', 'Display process ID') do
     options[:pid] = true
   end
