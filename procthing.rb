@@ -33,7 +33,8 @@ class ProcTree
     @options = options
     @procs = Sys::ProcTable.ps(smaps: false)
     @tree = gen_tree(@procs)
-    @pastel = Pastel.new
+    color = options[:nocolor]
+    @pastel = Pastel.new(enabled: !color)
   end
 
   def depth_color(depth)
@@ -57,6 +58,7 @@ class ProcTree
 
     tree.each_pair do |pid, prtr|
       next if pid.zero?
+      next if pid == 2 && !@options[:kernel]
 
       parent = tree[prtr.proc.ppid]
       parent.children << prtr
@@ -105,6 +107,12 @@ OptionParser.new do |opts|
   end
   opts.on('-m', '--cmd', 'Display process command line') do
     options[:cmd] = true
+  end
+  opts.on('-n', '--no-color', 'Disable color output') do
+    options[:nocolor] = true
+  end
+  opts.on('-k', '--kernel', 'Include kernel threads') do
+    options[:kernel] = true
   end
 end.parse!
 
