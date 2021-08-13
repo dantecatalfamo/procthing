@@ -46,6 +46,7 @@ class ProcTree
     kproc.name = 'Kernel'
     kproc.comm = Gem::Platform.local.os
     kproc.pid = 0
+    kproc.cmdline = File.read('/proc/cmdline').chomp if Gem::Platform.local.os == 'linux'
     kproc
   end
 
