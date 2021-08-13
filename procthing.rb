@@ -60,7 +60,9 @@ class ProcTree
       color = depth_color(i)
       pipes << @pastel.send(color, VERTICAL)
     end
-    pipes << @pastel.send(depth_color(depth - 1), last ? CONNECTOR_LAST : CONNECTOR)
+    unless depth.zero?
+      pipes << @pastel.send(depth_color(depth - 1), last ? CONNECTOR_LAST : CONNECTOR)
+    end
     dash = @pastel.send(depth_color(depth), prc.children.empty? ? HORIZONTAL : HORIZONTAL_CHILDREN)
     puts "#{pipes.join}#{dash}#{prc.proc.name}"
     prc.children.each { |chld| print_node(chld, depth + 1, chld == prc.children.last) }
